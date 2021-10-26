@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:ikiadim/model/onetimepass.dart';
 
 class ListPage extends StatefulWidget {
   const ListPage({Key? key}) : super(key: key);
@@ -8,6 +10,12 @@ class ListPage extends StatefulWidget {
 }
 
 class _ListPageState extends State<ListPage> {
+  @override
+  void dispose() {
+    Hive.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,25 +28,47 @@ class _ListPageState extends State<ListPage> {
   AppBar appBarMethod() {
     return AppBar(
       title: const Text('2 Adım'),
+      centerTitle: true,
     );
   }
 
   FloatingActionButton fabMethod() {
-    return const FloatingActionButton(
-      onPressed: null,
+    return FloatingActionButton(
+      onPressed: _testDataAdd,
       tooltip: 'Increment',
-      child: Icon(Icons.qr_code),
+      child: const Icon(Icons.qr_code),
     );
   }
 
-  Center bodyMethod() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const <Widget>[
-          Text('Hello world'),
-        ],
-      ),
+  ValueListenableBuilder bodyMethod() {
+    return ValueListenableBuilder(
+      valueListenable: Hive.box<OneTimePassword>(HiveBoxes.box).listenable(),
+      builder: (context, box, _) {
+        if (box.values.isEmpty) {
+          return const Center(
+            child: Text("Listeniz henüz boş"),
+          );
+        }
+        return ListView.builder(
+          itemCount: box.values.length,
+          itemBuilder: (context, index) {
+            OneTimePassword? otp = box.getAt(index);
+            return ListTile(
+              title: Text(otp!.label),
+            );
+          },
+        );
+      },
     );
+  }
+
+  void _testDataAdd() {
+    Box<OneTimePassword> otpBox = Hive.box<OneTimePassword>(HiveBoxes.box);
+    otpBox.add(OneTimePassword(
+      label: "jandarma.gov.tr",
+      secret: "JBSWY3DPEHPK3PXP",
+      type: Password.totp,
+    ));
+    setState(() {});
   }
 }
