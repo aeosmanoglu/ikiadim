@@ -46,7 +46,7 @@ class _ListPageState extends State<ListPage> {
       builder: (context, box, _) {
         if (box.values.isEmpty) {
           return const Center(
-            child: Text("Listeniz henüz boş"),
+            child: Text("Listeniz boş"),
           );
         }
         return ListView.builder(
