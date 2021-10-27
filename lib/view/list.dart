@@ -18,23 +18,23 @@ class _ListPageState extends State<ListPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: appBarMethod(),
-        body: bodyMethod(),
-        floatingActionButton: fabMethod(),
+        appBar: _appBarMethod(),
+        body: _bodyMethod(),
+        floatingActionButton: _fabMethod(),
       );
 
-  AppBar appBarMethod() => AppBar(
+  AppBar _appBarMethod() => AppBar(
         title: const Text('2 Adım'),
         centerTitle: true,
       );
 
-  FloatingActionButton fabMethod() => FloatingActionButton(
+  FloatingActionButton _fabMethod() => FloatingActionButton(
         onPressed: _testDataAdd,
         tooltip: 'Increment',
         child: const Icon(Icons.qr_code),
       );
 
-  ValueListenableBuilder bodyMethod() => ValueListenableBuilder(
+  ValueListenableBuilder _bodyMethod() => ValueListenableBuilder(
         valueListenable: Hive.box<OneTimePassword>(HiveBoxes.box).listenable(),
         builder: (context, box, _) {
           if (box.values.isEmpty) {
@@ -42,19 +42,19 @@ class _ListPageState extends State<ListPage> {
               child: Text("Listeniz boş"),
             );
           }
-          return listViewMethod(box);
+          return _listViewMethod(box);
         },
       );
 
-  ListView listViewMethod(box) => ListView.builder(
+  ListView _listViewMethod(box) => ListView.builder(
         itemCount: box.values.length,
         itemBuilder: (context, index) {
           OneTimePassword? otp = box.getAt(index);
-          return dismissMethod(otp);
+          return _dismissMethod(otp);
         },
       );
 
-  Dismissible dismissMethod(OneTimePassword? otp) => Dismissible(
+  Dismissible _dismissMethod(OneTimePassword? otp) => Dismissible(
         key: UniqueKey(),
         background: Container(
           color: Colors.red,
@@ -70,15 +70,15 @@ class _ListPageState extends State<ListPage> {
         direction: DismissDirection.endToStart,
         confirmDismiss: (direction) async => await showDialog(
           context: context,
-          builder: (BuildContext context) => dismissDialogMethod(
+          builder: (BuildContext context) => _dismissDialogMethod(
             otp,
             context,
           ),
         ),
-        child: listTileMethod(otp),
+        child: _listTileMethod(otp),
       );
 
-  AlertDialog dismissDialogMethod(
+  AlertDialog _dismissDialogMethod(
     OneTimePassword? otp,
     BuildContext context,
   ) =>
@@ -102,7 +102,7 @@ class _ListPageState extends State<ListPage> {
         ],
       );
 
-  ListTile listTileMethod(OneTimePassword? otp) => ListTile(
+  ListTile _listTileMethod(OneTimePassword? otp) => ListTile(
         title: Text(otp!.label),
       );
 
