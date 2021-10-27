@@ -1,5 +1,4 @@
 import 'package:hive/hive.dart';
-import 'package:otp/otp.dart';
 
 part 'onetimepass.g.dart';
 
@@ -29,11 +28,14 @@ class OneTimePassword extends HiveObject {
   @HiveField(7)
   Password type;
 
-  OneTimePassword({
-    required this.label,
-    required this.secret,
-    required this.type,
-  });
+  OneTimePassword(
+      {required this.label,
+      required this.secret,
+      required this.type,
+      this.length,
+      this.interval,
+      this.algorithm,
+      this.counter});
 }
 
 @HiveType(typeId: 1)
@@ -43,6 +45,18 @@ enum Password {
 
   @HiveField(1)
   hotp,
+}
+
+@HiveType(typeId: 2)
+enum Algorithm {
+  @HiveField(0)
+  SHA1,
+
+  @HiveField(1)
+  SHA256,
+
+  @HiveField(2)
+  SHA512,
 }
 
 class HiveBoxes {

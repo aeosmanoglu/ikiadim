@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:ikiadim/model/onetimepass.dart';
+import 'package:ikiadim/view/add.dart';
 
 class ListPage extends StatefulWidget {
   const ListPage({Key? key}) : super(key: key);
@@ -12,7 +13,7 @@ class ListPage extends StatefulWidget {
 class _ListPageState extends State<ListPage> {
   @override
   void dispose() {
-    Hive.close();
+    //Hive.close();
     super.dispose();
   }
 
@@ -24,12 +25,12 @@ class _ListPageState extends State<ListPage> {
       );
 
   AppBar _appBarMethod() => AppBar(
-        title: const Text('2 Adım'),
+        title: const Text('2 ADIM'),
         centerTitle: true,
       );
 
   FloatingActionButton _fabMethod() => FloatingActionButton(
-        onPressed: _testDataAdd,
+        onPressed: _navigate,
         tooltip: 'Increment',
         child: const Icon(Icons.qr_code),
       );
@@ -106,12 +107,17 @@ class _ListPageState extends State<ListPage> {
         title: Text(otp!.label),
       );
 
-  void _testDataAdd() {
-    Box<OneTimePassword> otpBox = Hive.box<OneTimePassword>(HiveBoxes.box);
-    otpBox.add(OneTimePassword(
-      label: "jandarma.gov.tr",
-      secret: "JBSWY3DPEHPK3PXP",
-      type: Password.totp,
-    ));
-  }
+  void _navigate() => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const AddOTPPage(),
+        ),
+      );
+  // Box<OneTimePassword> otpBox = Hive.box<OneTimePassword>(HiveBoxes.box);
+  // otpBox.add(OneTimePassword(
+  //   label: "jandarma.gov.tr",
+  //   secret: "JBSWY3DPEHPK3PXP",
+  //   type: Password.totp,
+  // ));
+
 }
