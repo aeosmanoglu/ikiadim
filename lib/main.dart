@@ -50,7 +50,6 @@ class MyApp extends StatelessWidget {
 /// TODO:
 /// - add try - catch
 /// - add sentry
-/// - delete list row
 /// - secure app
 /// - read qr code
 /// - name
