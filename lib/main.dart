@@ -51,6 +51,5 @@ class MyApp extends StatelessWidget {
 /// TODO:
 /// - add try - catch
 /// - add sentry
-/// - secure app
 /// - name
 /// - logo
