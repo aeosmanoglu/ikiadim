@@ -29,7 +29,6 @@ class _AddOTPPageState extends State<AddOTPPage> {
 
   @override
   void dispose() {
-    // Hive.close();
     controller?.dispose();
     super.dispose();
   }
@@ -123,6 +122,7 @@ class _AddOTPPageState extends State<AddOTPPage> {
           ),
         );
 
+        //TEST: Scaffold message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('$label anahtarı eklendi.')),
         );
