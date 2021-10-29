@@ -74,12 +74,12 @@ class _AddOTPPageState extends State<AddOTPPage> {
       Uri? uri = Uri.tryParse(scanData.code);
       if (uri?.scheme == "otpauth") {
         late Password type;
-        late Algorithm algorithm;
 
         String label = uri?.path.substring(1) ?? "İsimsiz";
-        String digit = uri?.queryParameters["digit"] ?? "6";
+        String digit = uri?.queryParameters["digits"] ?? "6";
         String period = uri?.queryParameters["period"] ?? "30";
-        String counter = uri?.queryParameters["counter"] ?? "30";
+        String counter = uri?.queryParameters["counter"] ?? "0";
+        String algorithm = uri?.queryParameters["algorithm"] ?? "SHA1";
 
         switch (uri?.host ?? "totp") {
           case "totp":
@@ -90,20 +90,6 @@ class _AddOTPPageState extends State<AddOTPPage> {
             break;
           default:
             Password.totp;
-        }
-
-        switch (uri?.queryParameters["algorithm"] ?? "SHA1") {
-          case "SHA1":
-            algorithm = Algorithm.SHA1;
-            break;
-          case "SHA256":
-            algorithm = Algorithm.SHA256;
-            break;
-          case "SHA512":
-            algorithm = Algorithm.SHA512;
-            break;
-          default:
-            algorithm = Algorithm.SHA1;
         }
 
         //TODO: secret validation

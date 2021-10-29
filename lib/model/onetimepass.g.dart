@@ -22,9 +22,10 @@ class OneTimePasswordAdapter extends TypeAdapter<OneTimePassword> {
       type: fields[7] as Password,
       length: fields[2] as int?,
       interval: fields[3] as int?,
-      algorithm: fields[4] as Algorithm?,
+      algorithm: fields[4] as String?,
       counter: fields[6] as int?,
-    )..isGoogle = fields[5] as bool?;
+      isGoogle: fields[5] as bool?,
+    );
   }
 
   @override
@@ -95,50 +96,6 @@ class PasswordAdapter extends TypeAdapter<Password> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is PasswordAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
-}
-
-class AlgorithmAdapter extends TypeAdapter<Algorithm> {
-  @override
-  final int typeId = 2;
-
-  @override
-  Algorithm read(BinaryReader reader) {
-    switch (reader.readByte()) {
-      case 0:
-        return Algorithm.SHA1;
-      case 1:
-        return Algorithm.SHA256;
-      case 2:
-        return Algorithm.SHA512;
-      default:
-        return Algorithm.SHA1;
-    }
-  }
-
-  @override
-  void write(BinaryWriter writer, Algorithm obj) {
-    switch (obj) {
-      case Algorithm.SHA1:
-        writer.writeByte(0);
-        break;
-      case Algorithm.SHA256:
-        writer.writeByte(1);
-        break;
-      case Algorithm.SHA512:
-        writer.writeByte(2);
-        break;
-    }
-  }
-
-  @override
-  int get hashCode => typeId.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is AlgorithmAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

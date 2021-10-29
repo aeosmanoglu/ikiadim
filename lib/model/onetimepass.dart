@@ -19,7 +19,7 @@ class OneTimePassword extends HiveObject {
   int? interval;
 
   @HiveField(4)
-  Algorithm? algorithm;
+  String? algorithm;
 
   @HiveField(5)
   bool? isGoogle;
@@ -34,10 +34,11 @@ class OneTimePassword extends HiveObject {
       {required this.label,
       required this.secret,
       required this.type,
-      this.length,
-      this.interval,
+      this.length = 6,
+      this.interval = 30,
       this.algorithm,
-      this.counter});
+      this.counter = 0,
+      this.isGoogle = true});
 }
 
 @HiveType(typeId: 1)
@@ -47,18 +48,6 @@ enum Password {
 
   @HiveField(1)
   hotp,
-}
-
-@HiveType(typeId: 2)
-enum Algorithm {
-  @HiveField(0)
-  SHA1,
-
-  @HiveField(1)
-  SHA256,
-
-  @HiveField(2)
-  SHA512,
 }
 
 class HiveBoxes {

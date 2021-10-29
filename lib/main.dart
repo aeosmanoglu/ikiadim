@@ -24,7 +24,7 @@ Future<void> main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(OneTimePasswordAdapter());
   Hive.registerAdapter(PasswordAdapter());
-  Hive.registerAdapter(AlgorithmAdapter());
+
   await Hive.openBox<OneTimePassword>(
     HiveBoxes.box,
     encryptionCipher: HiveAesCipher(encryptionKey),
