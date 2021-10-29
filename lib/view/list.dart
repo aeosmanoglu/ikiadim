@@ -1,30 +1,24 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:ikiadim/controller/progress.dart';
 import 'package:ikiadim/model/onetimepass.dart';
 import 'package:ikiadim/view/add.dart';
 import 'package:ikiadim/view/block.dart';
+import 'package:get/get.dart';
+import 'package:otp/otp.dart';
 
-class ListPage extends StatefulWidget {
-  const ListPage({Key? key}) : super(key: key);
+class ListPage extends StatelessWidget {
+  ListPage({Key? key}) : super(key: key);
 
-  @override
-  State<ListPage> createState() => _ListPageState();
-}
-
-class _ListPageState extends State<ListPage> {
-  @override
-  void initState() {
-    super.initState();
-    initPlatformState();
-  }
+  final Controller _controller = Get.put(Controller());
 
   Future<void> initPlatformState() async {
     bool jailbroken;
     bool developerMode;
 
-    // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       jailbroken = await FlutterJailbreakDetection.jailbroken;
       developerMode = await FlutterJailbreakDetection.developerMode;
@@ -33,45 +27,44 @@ class _ListPageState extends State<ListPage> {
       developerMode = true;
     }
 
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    if (jailbroken || developerMode) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const BlockPage(),
-        ),
-      );
-    }
+    (jailbroken || developerMode)
+        ? Get.to(() => const BlockPage())
+        : _controller.timer();
   }
 
   @override
-  void dispose() {
-    super.dispose();
-  }
+  Widget build(BuildContext context) {
+    initPlatformState();
+    deleteMe();
 
-  @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: _appBarMethod(),
-        body: _bodyMethod(),
-        floatingActionButton: _fabMethod(),
-      );
+    return Scaffold(
+      appBar: _appBarMethod(),
+      body: _bodyMethod(context),
+      floatingActionButton: _fabMethod(),
+    );
+  }
 
   AppBar _appBarMethod() => AppBar(
-        title: const Text('2 ADIM'),
+        title: const Text("2 ADIM"),
         centerTitle: true,
+        leading: Padding(
+          padding: const EdgeInsets.all(18.0),
+          child: GetBuilder<Controller>(
+            builder: (_) => CircularProgressIndicator(
+              value: _.counter,
+              color: Colors.white,
+              backgroundColor: Colors.black87,
+            ),
+          ),
+        ),
       );
 
   FloatingActionButton _fabMethod() => FloatingActionButton(
-        onPressed: _navigate,
-        tooltip: 'Increment',
+        onPressed: () => Get.to(() => const AddOTPPage()),
         child: const Icon(Icons.qr_code),
       );
 
-  ValueListenableBuilder _bodyMethod() => ValueListenableBuilder(
+  ValueListenableBuilder _bodyMethod(context) => ValueListenableBuilder(
         valueListenable: Hive.box<OneTimePassword>(HiveBoxes.box).listenable(),
         builder: (context, box, _) {
           if (box.values.isEmpty) {
@@ -79,19 +72,27 @@ class _ListPageState extends State<ListPage> {
               child: Text("Listeniz boş"),
             );
           }
-          return _listViewMethod(box);
+          return _listViewMethod(box, context);
         },
       );
 
-  ListView _listViewMethod(box) => ListView.builder(
+  ListView _listViewMethod(
+    box,
+    context,
+  ) =>
+      ListView.builder(
         itemCount: box.values.length,
         itemBuilder: (context, index) {
           OneTimePassword? otp = box.getAt(index);
-          return _dismissMethod(otp);
+          return _dismissMethod(otp, context);
         },
       );
 
-  Dismissible _dismissMethod(OneTimePassword? otp) => Dismissible(
+  Dismissible _dismissMethod(
+    OneTimePassword? otp,
+    BuildContext context,
+  ) =>
+      Dismissible(
         key: UniqueKey(),
         background: Container(
           color: Colors.red,
@@ -105,13 +106,15 @@ class _ListPageState extends State<ListPage> {
           ),
         ),
         direction: DismissDirection.endToStart,
-        confirmDismiss: (direction) async => await showDialog(
-          context: context,
-          builder: (BuildContext context) => _dismissDialogMethod(
-            otp,
-            context,
-          ),
-        ),
+        confirmDismiss: (direction) async {
+          return await showDialog(
+            context: context,
+            builder: (BuildContext context) => _dismissDialogMethod(
+              otp,
+              context,
+            ),
+          );
+        },
         child: _listTileMethod(otp),
       );
 
@@ -133,20 +136,36 @@ class _ListPageState extends State<ListPage> {
             child: const Text("SİL", style: TextStyle(color: Colors.red)),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
             child: const Text("İPTAL"),
           )
         ],
       );
 
-  ListTile _listTileMethod(OneTimePassword? otp) => ListTile(
-        title: Text(otp!.label),
-      );
+  ListTile _listTileMethod(OneTimePassword? otp) => totpTile(otp!);
 
-  void _navigate() => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const AddOTPPage(),
-        ),
-      );
+  ListTile totpTile(OneTimePassword otp) {
+    return ListTile(
+      title: Text(otp.label),
+      subtitle: Text("TODO"),
+    );
+  }
+
+  /// This func creates a dummy row for debugging on every save
+  deleteMe() {
+    Box<OneTimePassword> otpBox = Hive.box<OneTimePassword>(HiveBoxes.box);
+    otpBox.add(
+      OneTimePassword(
+        type: Password.totp,
+        label: "label",
+        secret: OTP.randomSecret(),
+        algorithm: "SHA1",
+        length: 6,
+        interval: 30,
+        counter: 0,
+      ),
+    );
+  }
 }
