@@ -1,70 +1,64 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:ikiadim/controller/progress.dart';
+import 'package:ikiadim/controller/controller.dart';
 import 'package:ikiadim/model/onetimepass.dart';
 import 'package:ikiadim/view/add.dart';
 import 'package:ikiadim/view/block.dart';
-import 'package:get/get.dart';
 import 'package:otp/otp.dart';
 
-class ListPage extends StatelessWidget {
-  ListPage({Key? key}) : super(key: key);
+class ListPage extends StatefulWidget {
+  const ListPage({Key? key}) : super(key: key);
 
-  final Controller _controller = Get.put(Controller());
+  @override
+  State<ListPage> createState() => _ListPageState();
+}
 
-  Future<void> initPlatformState() async {
-    bool jailbroken;
-    bool developerMode;
+class _ListPageState extends State<ListPage> {
+  double _value = Controller().counterValue();
+  late Timer _timer;
+  final int _time = DateTime.now().millisecondsSinceEpoch;
 
-    try {
-      jailbroken = await FlutterJailbreakDetection.jailbroken;
-      developerMode = await FlutterJailbreakDetection.developerMode;
-    } on PlatformException {
-      jailbroken = true;
-      developerMode = true;
-    }
-
-    (jailbroken || developerMode)
-        ? Get.to(() => const BlockPage())
-        : _controller.timer();
+  @override
+  void initState() {
+    super.initState();
+    _initPlatformState();
+    _timer = _updateTimer();
   }
 
   @override
-  Widget build(BuildContext context) {
-    initPlatformState();
-    deleteMe();
-
-    return Scaffold(
-      appBar: _appBarMethod(),
-      body: _bodyMethod(context),
-      floatingActionButton: _fabMethod(),
-    );
-  }
+  Widget build(BuildContext context) => Scaffold(
+        appBar: _appBarMethod(),
+        body: _bodyMethod(),
+        floatingActionButton: _fabMethod(),
+      );
 
   AppBar _appBarMethod() => AppBar(
         title: const Text("2 ADIM"),
         centerTitle: true,
         leading: Padding(
-          padding: const EdgeInsets.all(18.0),
-          child: GetBuilder<Controller>(
-            builder: (_) => CircularProgressIndicator(
-              value: _.counter,
-              color: Colors.white,
-              backgroundColor: Colors.black87,
-            ),
+          padding: const EdgeInsets.all(18),
+          child: CircularProgressIndicator(
+            value: _value,
+            color: _value <= .1 ? Colors.orange : Colors.white,
+            backgroundColor: Colors.black87,
+            strokeWidth: 4,
           ),
         ),
       );
 
   FloatingActionButton _fabMethod() => FloatingActionButton(
-        onPressed: () => Get.to(() => const AddOTPPage()),
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ScannerPage()),
+        ),
         child: const Icon(Icons.qr_code),
       );
 
-  ValueListenableBuilder _bodyMethod(context) => ValueListenableBuilder(
+  ValueListenableBuilder _bodyMethod() => ValueListenableBuilder(
         valueListenable: Hive.box<OneTimePassword>(HiveBoxes.box).listenable(),
         builder: (context, box, _) {
           if (box.values.isEmpty) {
@@ -72,27 +66,19 @@ class ListPage extends StatelessWidget {
               child: Text("Listeniz boş"),
             );
           }
-          return _listViewMethod(box, context);
+          return _listViewMethod(box);
         },
       );
 
-  ListView _listViewMethod(
-    box,
-    context,
-  ) =>
-      ListView.builder(
+  ListView _listViewMethod(box) => ListView.builder(
         itemCount: box.values.length,
         itemBuilder: (context, index) {
           OneTimePassword? otp = box.getAt(index);
-          return _dismissMethod(otp, context);
+          return _dismissMethod(otp);
         },
       );
 
-  Dismissible _dismissMethod(
-    OneTimePassword? otp,
-    BuildContext context,
-  ) =>
-      Dismissible(
+  Dismissible _dismissMethod(OneTimePassword? otp) => Dismissible(
         key: UniqueKey(),
         background: Container(
           color: Colors.red,
@@ -107,12 +93,10 @@ class ListPage extends StatelessWidget {
         ),
         direction: DismissDirection.endToStart,
         confirmDismiss: (direction) async {
+          _timer.cancel;
           return await showDialog(
             context: context,
-            builder: (BuildContext context) => _dismissDialogMethod(
-              otp,
-              context,
-            ),
+            builder: (BuildContext context) => _dismissDialogMethod(otp),
           );
         },
         child: _listTileMethod(otp),
@@ -120,7 +104,6 @@ class ListPage extends StatelessWidget {
 
   AlertDialog _dismissDialogMethod(
     OneTimePassword? otp,
-    BuildContext context,
   ) =>
       AlertDialog(
         title: const Text("Onaylayın"),
@@ -132,40 +115,77 @@ class ListPage extends StatelessWidget {
             onPressed: () {
               otp!.delete();
               Navigator.of(context).pop(true);
+              _timer = _updateTimer();
             },
-            child: const Text("SİL", style: TextStyle(color: Colors.red)),
+            child: const Text(
+              "SİL",
+              style: TextStyle(color: Colors.red),
+            ),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(false);
+              _timer = _updateTimer();
             },
             child: const Text("İPTAL"),
           )
         ],
       );
 
-  ListTile _listTileMethod(OneTimePassword? otp) => totpTile(otp!);
+  ListTile _listTileMethod(OneTimePassword? otp) =>
+      otp!.type == Password.totp ? totpTile(otp) : hotpTile(otp);
 
-  ListTile totpTile(OneTimePassword otp) {
-    return ListTile(
-      title: Text(otp.label),
-      subtitle: Text("TODO"),
-    );
+  ListTile totpTile(OneTimePassword otp) => ListTile(
+        title: Text(otp.label),
+        subtitle: Text(OTP.generateTOTPCodeString(
+          otp.secret,
+          _time,
+          length: otp.length!,
+          interval: otp.interval!,
+          algorithm: Controller().toAlgorithm(otp.algorithm!),
+          isGoogle: true,
+        )),
+      );
+
+  ListTile hotpTile(OneTimePassword otp) => ListTile(
+        title: Text(otp.label),
+        subtitle: Text(OTP.generateHOTPCodeString(
+          otp.secret,
+          otp.counter!,
+          length: otp.length!,
+          algorithm: Controller().toAlgorithm(otp.algorithm!),
+        )),
+        trailing: IconButton(
+          onPressed: () {
+            int counter = otp.counter!;
+            otp.box!.put("counter", counter++);
+          },
+          icon: const Icon(Icons.add_circle_outline),
+        ),
+      );
+
+  Future<void> _initPlatformState() async {
+    bool jailbroken;
+    bool developerMode;
+
+    try {
+      jailbroken = await FlutterJailbreakDetection.jailbroken;
+      developerMode = await FlutterJailbreakDetection.developerMode;
+    } on PlatformException {
+      jailbroken = true;
+      developerMode = true;
+    }
+
+    if (!mounted) return;
+
+    if (jailbroken || developerMode) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const BlockPage()),
+      );
+    }
   }
 
-  /// This func creates a dummy row for debugging on every save
-  deleteMe() {
-    Box<OneTimePassword> otpBox = Hive.box<OneTimePassword>(HiveBoxes.box);
-    otpBox.add(
-      OneTimePassword(
-        type: Password.totp,
-        label: "label",
-        secret: OTP.randomSecret(),
-        algorithm: "SHA1",
-        length: 6,
-        interval: 30,
-        counter: 0,
-      ),
-    );
-  }
+  Timer _updateTimer() => Timer.periodic(const Duration(seconds: 1),
+      (timer) => setState(() => _value = Controller().counterValue()));
 }

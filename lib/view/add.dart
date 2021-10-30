@@ -6,14 +6,14 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:ikiadim/model/onetimepass.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
-class AddOTPPage extends StatefulWidget {
-  const AddOTPPage({Key? key}) : super(key: key);
+class ScannerPage extends StatefulWidget {
+  const ScannerPage({Key? key}) : super(key: key);
 
   @override
-  _AddOTPPageState createState() => _AddOTPPageState();
+  _ScannerPageState createState() => _ScannerPageState();
 }
 
-class _AddOTPPageState extends State<AddOTPPage> {
+class _ScannerPageState extends State<ScannerPage> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? controller;
 
