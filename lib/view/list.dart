@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:ikiadim/controller/controller.dart';
 import 'package:ikiadim/model/onetimepass.dart';
@@ -18,39 +19,43 @@ class ListPage extends StatefulWidget {
 }
 
 class _ListPageState extends State<ListPage> {
+  final Box _box = Hive.box<OneTimePassword>(HiveBoxes.box);
   double _value = Controller().counterValue();
   late Timer _timer;
-  final int _time = DateTime.now().millisecondsSinceEpoch;
+  int _time = DateTime.now().millisecondsSinceEpoch;
 
   @override
   void initState() {
     super.initState();
     _initPlatformState();
     _timer = _updateTimer();
+    Controller().deleteMe();
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: _appBarMethod(),
-        body: _bodyMethod(),
-        floatingActionButton: _fabMethod(),
+        appBar: _appBar(),
+        body: _body(),
+        floatingActionButton: _fab(),
       );
 
-  AppBar _appBarMethod() => AppBar(
+  AppBar _appBar() => AppBar(
         title: const Text("2 ADIM"),
         centerTitle: true,
         leading: Padding(
           padding: const EdgeInsets.all(18),
-          child: CircularProgressIndicator(
-            value: _value,
-            color: _value <= .1 ? Colors.orange : Colors.white,
-            backgroundColor: Colors.black87,
-            strokeWidth: 4,
-          ),
+          child: _indicator(),
         ),
       );
 
-  FloatingActionButton _fabMethod() => FloatingActionButton(
+  CircularProgressIndicator _indicator() => CircularProgressIndicator(
+        value: _value,
+        color: _value <= .1 ? Colors.orange : Colors.white,
+        backgroundColor: Colors.black87,
+        strokeWidth: 4,
+      );
+
+  FloatingActionButton _fab() => FloatingActionButton(
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ScannerPage()),
@@ -58,27 +63,38 @@ class _ListPageState extends State<ListPage> {
         child: const Icon(Icons.qr_code),
       );
 
-  ValueListenableBuilder _bodyMethod() => ValueListenableBuilder(
-        valueListenable: Hive.box<OneTimePassword>(HiveBoxes.box).listenable(),
+  ValueListenableBuilder _body() => ValueListenableBuilder(
+        valueListenable: _box.listenable(),
         builder: (context, box, _) {
           if (box.values.isEmpty) {
-            return const Center(
-              child: Text("Listeniz boş"),
+            return Center(
+              child: Text(
+                "Listeniz boş.",
+                style: Theme.of(context).textTheme.headline6,
+              ),
             );
           }
-          return _listViewMethod(box);
+          return _listener(box);
         },
       );
 
-  ListView _listViewMethod(box) => ListView.builder(
+  Listener _listener(box) => Listener(
+        onPointerDown: (_) => _timer.cancel(),
+        onPointerUp: (_) => _timer = _updateTimer(),
+        child: _listView(box),
+      );
+
+  ListView _listView(box) => ListView.separated(
+        padding: const EdgeInsets.all(8),
         itemCount: box.values.length,
+        separatorBuilder: (context, index) => const Divider(),
         itemBuilder: (context, index) {
           OneTimePassword? otp = box.getAt(index);
-          return _dismissMethod(otp);
+          return _dismiss(otp);
         },
       );
 
-  Dismissible _dismissMethod(OneTimePassword? otp) => Dismissible(
+  Dismissible _dismiss(OneTimePassword? otp) => Dismissible(
         key: UniqueKey(),
         background: Container(
           color: Colors.red,
@@ -93,19 +109,16 @@ class _ListPageState extends State<ListPage> {
         ),
         direction: DismissDirection.endToStart,
         confirmDismiss: (direction) async {
-          _timer.cancel;
+          _timer.cancel();
           return await showDialog(
             context: context,
-            builder: (BuildContext context) => _dismissDialogMethod(otp),
+            builder: (BuildContext context) => _dialog(otp),
           );
         },
-        child: _listTileMethod(otp),
+        child: _listTile(otp),
       );
 
-  AlertDialog _dismissDialogMethod(
-    OneTimePassword? otp,
-  ) =>
-      AlertDialog(
+  AlertDialog _dialog(OneTimePassword? otp) => AlertDialog(
         title: const Text("Onaylayın"),
         content: const Text(
           "Bu veriyi sildiğinizde bir daha geri getiremeyeceksiniz. Emin misiniz?",
@@ -132,37 +145,57 @@ class _ListPageState extends State<ListPage> {
         ],
       );
 
-  ListTile _listTileMethod(OneTimePassword? otp) =>
+  ListTile _listTile(OneTimePassword? otp) =>
       otp!.type == Password.totp ? totpTile(otp) : hotpTile(otp);
 
-  ListTile totpTile(OneTimePassword otp) => ListTile(
-        title: Text(otp.label),
-        subtitle: Text(OTP.generateTOTPCodeString(
-          otp.secret,
-          _time,
-          length: otp.length!,
-          interval: otp.interval!,
-          algorithm: Controller().toAlgorithm(otp.algorithm!),
-          isGoogle: true,
-        )),
-      );
-
-  ListTile hotpTile(OneTimePassword otp) => ListTile(
-        title: Text(otp.label),
-        subtitle: Text(OTP.generateHOTPCodeString(
-          otp.secret,
-          otp.counter!,
-          length: otp.length!,
-          algorithm: Controller().toAlgorithm(otp.algorithm!),
-        )),
-        trailing: IconButton(
-          onPressed: () {
-            int counter = otp.counter!;
-            otp.box!.put("counter", counter++);
-          },
-          icon: const Icon(Icons.add_circle_outline),
+  ListTile totpTile(OneTimePassword otp) {
+    _time = DateTime.now().millisecondsSinceEpoch;
+    String digits = OTP.generateTOTPCodeString(
+      otp.secret,
+      _time,
+      length: otp.length!,
+      interval: otp.interval!,
+      algorithm: Controller().toAlgorithm(otp.algorithm!),
+      isGoogle: true,
+    );
+    return ListTile(
+      subtitle: Text(otp.label),
+      title: Text(
+        digits,
+        style: GoogleFonts.robotoMono(
+          textStyle: Theme.of(context).textTheme.headline3,
         ),
-      );
+      ),
+      onTap: () => Controller().copy2clipboard(context, digits, otp.label),
+    );
+  }
+
+  ListTile hotpTile(OneTimePassword otp) {
+    String digits = OTP.generateHOTPCodeString(
+      otp.secret,
+      otp.counter!,
+      length: otp.length!,
+      algorithm: Controller().toAlgorithm(otp.algorithm!),
+    );
+    return ListTile(
+      subtitle: Text(otp.label),
+      title: Text(
+        digits,
+        style: GoogleFonts.robotoMono(
+          textStyle: Theme.of(context).textTheme.headline3,
+        ),
+      ),
+      trailing: IconButton(
+        onPressed: () {
+          otp.counter = otp.counter! + 1;
+          var key = _box.keyAt(otp.key);
+          _box.put(key, otp);
+        },
+        icon: const Icon(Icons.add_circle_outline),
+      ),
+      onTap: () => Controller().copy2clipboard(context, digits, otp.label),
+    );
+  }
 
   Future<void> _initPlatformState() async {
     bool jailbroken;
@@ -186,6 +219,8 @@ class _ListPageState extends State<ListPage> {
     }
   }
 
-  Timer _updateTimer() => Timer.periodic(const Duration(seconds: 1),
-      (timer) => setState(() => _value = Controller().counterValue()));
+  Timer _updateTimer() => Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (!mounted) return;
+        setState(() => _value = Controller().counterValue());
+      });
 }

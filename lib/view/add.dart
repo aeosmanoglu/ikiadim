@@ -108,9 +108,8 @@ class _ScannerPageState extends State<ScannerPage> {
           ),
         );
 
-        //TEST: Scaffold message
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$label anahtarı eklendi.')),
+          SnackBar(content: Text('"$label" anahtarı eklendi.')),
         );
         controller.dispose();
         Navigator.pop(context);

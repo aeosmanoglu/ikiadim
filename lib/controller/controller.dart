@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:ikiadim/model/onetimepass.dart';
@@ -58,5 +60,42 @@ class Controller {
       default:
         return Algorithm.SHA1;
     }
+  }
+
+  /// Datayı panoya kopyalar. Tüm açık snackbarları kapatarak, yeni snackbar ile
+  /// bilgi verir.
+  copy2clipboard(BuildContext context, String data, String label) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    Clipboard.setData(ClipboardData(text: data));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('"$label" kopyalandı.')),
+    );
+  }
+
+  /// Debug için dummy data ekler. Productiondan önce silinmeli.
+  deleteMe() {
+    Box<OneTimePassword> otpBox = Hive.box<OneTimePassword>(HiveBoxes.box);
+    otpBox.add(
+      OneTimePassword(
+        type: Password.totp,
+        label: "Label TOTP",
+        secret: OTP.randomSecret(),
+        algorithm: "SHA1",
+        length: 6,
+        interval: 30,
+        counter: 0,
+      ),
+    );
+    otpBox.add(
+      OneTimePassword(
+        type: Password.hotp,
+        label: "Label HOTP",
+        secret: OTP.randomSecret(),
+        algorithm: "SHA1",
+        length: 6,
+        interval: 30,
+        counter: 0,
+      ),
+    );
   }
 }
