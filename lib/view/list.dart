@@ -85,7 +85,6 @@ class _ListPageState extends State<ListPage> {
       );
 
   ListView _listView(box) => ListView.separated(
-        padding: const EdgeInsets.all(8),
         itemCount: box.values.length,
         separatorBuilder: (context, index) => const Divider(),
         itemBuilder: (context, index) {
@@ -146,9 +145,9 @@ class _ListPageState extends State<ListPage> {
       );
 
   ListTile _listTile(OneTimePassword? otp) =>
-      otp!.type == Password.totp ? totpTile(otp) : hotpTile(otp);
+      otp!.type == Password.totp ? _totpTile(otp) : _hotpTile(otp);
 
-  ListTile totpTile(OneTimePassword otp) {
+  ListTile _totpTile(OneTimePassword otp) {
     _time = DateTime.now().millisecondsSinceEpoch;
     String digits = OTP.generateTOTPCodeString(
       otp.secret,
@@ -170,7 +169,7 @@ class _ListPageState extends State<ListPage> {
     );
   }
 
-  ListTile hotpTile(OneTimePassword otp) {
+  ListTile _hotpTile(OneTimePassword otp) {
     String digits = OTP.generateHOTPCodeString(
       otp.secret,
       otp.counter!,

@@ -35,20 +35,20 @@ class _ScannerPageState extends State<ScannerPage> {
 
   @override
   Scaffold build(BuildContext context) => Scaffold(
-        appBar: _appBarMethod(),
-        body: _bodyMethod(),
+        appBar: _appBar(),
+        body: _body(),
       );
 
-  AppBar _appBarMethod() => AppBar(
+  AppBar _appBar() => AppBar(
         title: const Text('Geri'),
         centerTitle: false,
       );
 
-  Center _bodyMethod() => Center(
-        child: _qrViewMethod(context),
+  Center _body() => Center(
+        child: _qrView(context),
       );
 
-  QRView _qrViewMethod(BuildContext context) => QRView(
+  QRView _qrView(BuildContext context) => QRView(
         key: qrKey,
         onQRViewCreated: _onQRViewCreated,
         overlay: QrScannerOverlayShape(
@@ -118,7 +118,7 @@ class _ScannerPageState extends State<ScannerPage> {
   }
 
   _onPermissionSet(BuildContext context, QRViewController ctrl, bool p) {
-    debugPrint('${DateTime.now().toIso8601String()}_onPermissionSet $p');
+    //debugPrint('${DateTime.now().toIso8601String()}_onPermissionSet $p');
     if (!p) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Kamera erişim izni yok')),
