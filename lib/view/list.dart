@@ -158,11 +158,15 @@ class _ListPageState extends State<ListPage> {
       isGoogle: true,
     );
     return ListTile(
-      subtitle: Text(otp.label),
+      subtitle: Text(
+        otp.label,
+        style: Theme.of(context).textTheme.headline6,
+      ),
       title: Text(
         digits,
         style: GoogleFonts.robotoMono(
           textStyle: Theme.of(context).textTheme.headline3,
+          color: _value <= .1 ? Colors.orange : Colors.blue,
         ),
       ),
       onTap: () => Controller().copy2clipboard(context, digits, otp.label),
@@ -177,7 +181,10 @@ class _ListPageState extends State<ListPage> {
       algorithm: Controller().toAlgorithm(otp.algorithm!),
     );
     return ListTile(
-      subtitle: Text(otp.label),
+      subtitle: Text(
+        otp.label,
+        style: Theme.of(context).textTheme.headline6,
+      ),
       title: Text(
         digits,
         style: GoogleFonts.robotoMono(
