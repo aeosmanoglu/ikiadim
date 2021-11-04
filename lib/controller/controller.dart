@@ -74,8 +74,9 @@ class Controller {
 
   /// Verilen değerin BASE32 olup olmadığını kontrol eder.
   bool isBase32(String key) {
-    RegExp regExp = RegExp(r"[A-Z2-7]+");
-    return regExp.hasMatch(key);
+    key = key.toUpperCase();
+    RegExp regExp = RegExp(r"^[A-Z2-7]+=*$");
+    return key.length % 8 != 0 ? false : regExp.hasMatch(key);
   }
 
   /// Debug için dummy data ekler. Productiondan önce silinmeli.
