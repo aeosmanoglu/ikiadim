@@ -72,6 +72,12 @@ class Controller {
     );
   }
 
+  /// Verilen değerin BASE32 olup olmadığını kontrol eder.
+  bool isBase32(String key) {
+    RegExp regExp = RegExp(r"[A-Z2-7]+");
+    return regExp.hasMatch(key);
+  }
+
   /// Debug için dummy data ekler. Productiondan önce silinmeli.
   deleteMe() {
     Box<OneTimePassword> otpBox = Hive.box<OneTimePassword>(HiveBoxes.box);

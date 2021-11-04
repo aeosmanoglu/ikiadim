@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:ikiadim/controller/controller.dart';
 import 'package:ikiadim/model/onetimepass.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
@@ -92,25 +93,31 @@ class _ScannerPageState extends State<ScannerPage> {
             Password.totp;
         }
 
-        //TODO: secret validation
         String secret = uri!.queryParameters["secret"]!;
+        if (Controller().isBase32(secret)) {
+          Box<OneTimePassword> otpBox =
+              Hive.box<OneTimePassword>(HiveBoxes.box);
+          otpBox.add(
+            OneTimePassword(
+              type: type,
+              label: label,
+              secret: secret,
+              algorithm: algorithm,
+              length: int.tryParse(digit),
+              interval: int.tryParse(period),
+              counter: int.tryParse(counter),
+            ),
+          );
 
-        Box<OneTimePassword> otpBox = Hive.box<OneTimePassword>(HiveBoxes.box);
-        otpBox.add(
-          OneTimePassword(
-            type: type,
-            label: label,
-            secret: secret,
-            algorithm: algorithm,
-            length: int.tryParse(digit),
-            interval: int.tryParse(period),
-            counter: int.tryParse(counter),
-          ),
-        );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('"$label" anahtarı eklendi.')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Geçersiz Anahtar')),
+          );
+        }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('"$label" anahtarı eklendi.')),
-        );
         controller.dispose();
         Navigator.pop(context);
       }
