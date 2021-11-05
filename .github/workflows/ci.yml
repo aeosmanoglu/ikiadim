@@ -1,27 +1,25 @@
 name: CI
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
 
-      - name: Flutter Master Clone
-        run: git clone -b master https://github.com/flutter/flutter.git
-        
-      - name: Getting Packs
-        run: ./flutter/bin/flutter pub get
-        
-      - name: Generate Hive Adaptors
-        run: ./flutter/bin/flutter packages pub run build_runner build --delete-conflicting-outputs
-        
-      - name: Run Test
-        run: ./flutter/bin/flutter test test/controller_test.dart
+            - name: Flutter Master Clone
+              run: git clone -b master https://github.com/flutter/flutter.git
 
+            - name: Getting Packs
+              run: ./flutter/bin/flutter pub get
 
+            - name: Generate Hive Adaptors
+              run: ./flutter/bin/flutter packages pub run build_runner build --delete-conflicting-outputs
+
+            - name: Run Test
+              run: ./flutter/bin/flutter test test/unit_test.dart
