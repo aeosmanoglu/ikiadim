@@ -6,6 +6,7 @@ import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:ikiadim/controller/controller.dart';
+import 'package:ikiadim/model/custom_color.dart';
 import 'package:ikiadim/model/onetimepass.dart';
 import 'package:ikiadim/view/add.dart';
 import 'package:ikiadim/view/block.dart';
@@ -166,7 +167,9 @@ class _ListPageState extends State<ListPage> {
         digits,
         style: GoogleFonts.robotoMono(
           textStyle: Theme.of(context).textTheme.headline3,
-          color: _value <= .1 ? Colors.orange : Colors.blue,
+          color: _value <= .1
+              ? Colors.orange
+              : CustomColors().primarySwatch.shade300,
         ),
       ),
       onTap: () => Controller().copy2clipboard(context, digits, otp.label),

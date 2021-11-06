@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ikiadim/controller/controller.dart';
+import 'package:ikiadim/model/custom_color.dart';
 import 'package:ikiadim/view/list.dart';
 
 Future<void> main() async {
@@ -18,11 +19,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Controller().createMC(const Color(0xFF194073)),
+        colorScheme: const ColorScheme.light().copyWith(
+          primary: CustomColors().primarySwatch,
+          secondary: CustomColors().primarySwatch.shade400,
+          onSecondary: Colors.white,
+        ),
       ),
       darkTheme: ThemeData.dark().copyWith(
         colorScheme: const ColorScheme.dark().copyWith(
-          secondary: const Color(0xFFD9CA7E),
+          secondary: CustomColors().secondarySwatch,
         ),
       ),
       themeMode: ThemeMode.system,
