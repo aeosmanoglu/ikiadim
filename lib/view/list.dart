@@ -30,7 +30,8 @@ class _ListPageState extends State<ListPage> {
     super.initState();
     _initPlatformState();
     _timer = _updateTimer();
-    Controller().deleteMe();
+    // Uncomment for debug
+    // Controller().deleteMe();
   }
 
   @override
