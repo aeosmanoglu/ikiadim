@@ -9,6 +9,7 @@ environment:
 dependencies:
     flutter:
         sdk: flutter
+    flutter_dotenv: ^5.0.2
     flutter_jailbreak_detection: ^1.8.0
     flutter_secure_storage: ^4.2.1
     google_fonts: ^2.1.0
@@ -16,6 +17,7 @@ dependencies:
     hive_flutter: ^1.1.0
     otp: ^3.0.1
     qr_code_scanner: ^0.5.2
+    sentry_flutter: ^6.1.0
 
 dev_dependencies:
     flutter_test:
@@ -55,3 +57,5 @@ flutter_native_splash:
 
 flutter:
     uses-material-design: true
+    assets:
+        - .env

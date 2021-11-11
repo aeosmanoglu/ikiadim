@@ -1,14 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ikiadim/controller/controller.dart';
 import 'package:ikiadim/model/custom_color.dart';
 import 'package:ikiadim/view/list.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Controller().setSecureKey();
-  await Controller().initTheBox();
-  await Controller().openTheBox();
-  runApp(const MyApp());
+  await dotenv.load(fileName: '.env');
+  await SentryFlutter.init(
+    (options) {
+      options.dsn = dotenv.env['DSN'];
+      options.environment = "profile";
+    },
+    appRunner: () async {
+      try {
+        await Controller().setSecureKey();
+        await Controller().initTheBox();
+        await Controller().openTheBox();
+      } on Exception catch (exception, stackTrace) {
+        await Sentry.captureException(
+          exception,
+          stackTrace: stackTrace,
+        );
+      }
+      runApp(const MyApp());
+    },
+  );
 }
 
 class MyApp extends StatelessWidget {
