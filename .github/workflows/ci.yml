@@ -23,9 +23,6 @@ jobs:
 
             - name: Create env file
               run: touch .env
-              
-            - name: Analyze Dart
-              uses: zgosalvez/github-actions-analyze-dart@v1.6.1
 
             - name: Run Test
               run: ./flutter/bin/flutter test test/unit_test.dart
