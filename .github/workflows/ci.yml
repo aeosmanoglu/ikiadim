@@ -21,7 +21,7 @@ jobs:
             - name: Generate Hive Adaptors
               run: ./flutter/bin/flutter packages pub run build_runner build --delete-conflicting-outputs
 
-            - name: Generate Hive Adaptors
+            - name: Create env file
               run: touch .env
 
             - name: Run Test
