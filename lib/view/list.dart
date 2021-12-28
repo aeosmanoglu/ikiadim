@@ -19,7 +19,7 @@ class ListPage extends StatefulWidget {
   State<ListPage> createState() => _ListPageState();
 }
 
-class _ListPageState extends State<ListPage> {
+class _ListPageState extends State<ListPage> with WidgetsBindingObserver {
   final Box _box = Hive.box<OneTimePassword>(HiveBoxes.box);
   double _value = Controller().counterValue();
   late Timer _timer;
@@ -27,11 +27,25 @@ class _ListPageState extends State<ListPage> {
 
   @override
   void initState() {
+    WidgetsBinding.instance!.addObserver(this);
     super.initState();
     _initPlatformState();
     _timer = _updateTimer();
     // Uncomment for debug
-    Controller().deleteMe();
+    // Controller().deleteMe();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance!.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    state == AppLifecycleState.resumed
+        ? _timer = _updateTimer()
+        : _timer.cancel();
   }
 
   @override
