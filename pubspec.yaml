@@ -1,7 +1,7 @@
 name: ikiadim
 description: A Flutter Two Factor Authenticator App
 publish_to: "none"
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
     sdk: ">=2.12.0 <3.0.0"
@@ -30,11 +30,12 @@ dev_dependencies:
     flutter_native_splash: ^1.3.1
 
 flutter_icons:
+    # flutter pub run flutter_launcher_icons:main
     image_path: "assets/images/AppIcon.png"
-    android: true
+    android: false
     ios: true
-    adaptive_icon_background: "#194073"
-    adaptive_icon_foreground: "assets/images/foreground.png"
+    # adaptive_icon_background: "#194073"
+    # adaptive_icon_foreground: "assets/images/foreground.png"
 
 flutter_native_splash:
     # flutter pub run flutter_native_splash:create
