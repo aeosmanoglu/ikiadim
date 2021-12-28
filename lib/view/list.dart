@@ -10,6 +10,7 @@ import 'package:ikiadim/model/custom_color.dart';
 import 'package:ikiadim/model/onetimepass.dart';
 import 'package:ikiadim/view/add.dart';
 import 'package:ikiadim/view/block.dart';
+import 'package:ikiadim/view/info.dart';
 import 'package:otp/otp.dart';
 
 class ListPage extends StatefulWidget {
@@ -62,6 +63,15 @@ class _ListPageState extends State<ListPage> with WidgetsBindingObserver {
           padding: const EdgeInsets.all(18),
           child: _indicator(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const InfoPage()),
+            ),
+          ),
+        ],
       );
 
   CircularProgressIndicator _indicator() => CircularProgressIndicator(
