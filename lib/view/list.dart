@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'package:flutter/services.dart';
 import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -31,7 +31,7 @@ class _ListPageState extends State<ListPage> {
     _initPlatformState();
     _timer = _updateTimer();
     // Uncomment for debug
-    // Controller().deleteMe();
+    Controller().deleteMe();
   }
 
   @override
@@ -221,11 +221,17 @@ class _ListPageState extends State<ListPage> {
 
     if (!mounted) return;
 
-    if (jailbroken || developerMode) {
-      Navigator.push(
+    blocker() {
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const BlockPage()),
       );
+    }
+
+    if (Platform.isIOS && jailbroken) {
+      blocker();
+    } else if (Platform.isAndroid && developerMode) {
+      blocker();
     }
   }
 
