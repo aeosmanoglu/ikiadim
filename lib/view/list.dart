@@ -1,8 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'dart:io' show Platform;
-import 'package:flutter/services.dart';
-import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:ikiadim/controller/controller.dart';
@@ -12,6 +11,7 @@ import 'package:ikiadim/view/add.dart';
 import 'package:ikiadim/view/block.dart';
 import 'package:ikiadim/view/info.dart';
 import 'package:otp/otp.dart';
+import 'package:safe_device/safe_device.dart';
 
 class ListPage extends StatefulWidget {
   const ListPage({Key? key}) : super(key: key);
@@ -32,8 +32,6 @@ class _ListPageState extends State<ListPage> with WidgetsBindingObserver {
     super.initState();
     _initPlatformState();
     _timer = _updateTimer();
-    // Uncomment for debug
-    // Controller().deleteMe();
   }
 
   @override
@@ -232,30 +230,23 @@ class _ListPageState extends State<ListPage> with WidgetsBindingObserver {
   }
 
   Future<void> _initPlatformState() async {
-    bool jailbroken;
-    bool developerMode;
-
-    try {
-      jailbroken = await FlutterJailbreakDetection.jailbroken;
-      developerMode = await FlutterJailbreakDetection.developerMode;
-    } on PlatformException {
-      jailbroken = true;
-      developerMode = true;
-    }
-
-    if (!mounted) return;
-
-    blocker() {
+    blockApp() {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const BlockPage()),
       );
     }
 
-    if (Platform.isIOS && jailbroken) {
-      blocker();
-    } else if (Platform.isAndroid && developerMode) {
-      blocker();
+    if (await SafeDevice.isJailBroken) {
+      blockApp();
+    }
+
+    if (Platform.isAndroid && await SafeDevice.isOnExternalStorage) {
+      blockApp();
+    }
+
+    if (!await SafeDevice.isRealDevice) {
+      Controller().addDummyData();
     }
   }
 

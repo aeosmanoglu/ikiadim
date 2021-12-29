@@ -79,8 +79,8 @@ class Controller {
     return key.length % 8 != 0 ? false : regExp.hasMatch(key);
   }
 
-  /// Debug için dummy data ekler. Productiondan önce silinmeli.
-  deleteMe() {
+  /// Debug için dummy data ekler.
+  addDummyData() {
     Box<OneTimePassword> otpBox = Hive.box<OneTimePassword>(HiveBoxes.box);
     otpBox.add(
       OneTimePassword(
